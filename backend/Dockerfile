@@ -59,4 +59,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Start production API server
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && npx prisma db seed && node dist/server.js"]
