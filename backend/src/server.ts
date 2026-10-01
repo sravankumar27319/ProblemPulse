@@ -7,9 +7,9 @@ const port = config.port;
 
 const server = app.listen(port, host, async () => {
   console.log(
-    `🚀 ProblemPulse Backend server running on http://${host}:${port} [${config.nodeEnv}]`
+    `🚀 ProblemPulse Backend server running on port ${port} [${config.nodeEnv}]`
   );
-  console.log(`🔗 Health check available at http://${host}:${port}/api/health`);
+  console.log(`🔗 Health check available at http://localhost:${port}/api/health`);
 
   try {
     // Verify database connection on startup
