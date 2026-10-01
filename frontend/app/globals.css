@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
+}
+
 :root {
   --bg: #faf8f4;
   --panel: #ffffff;
@@ -9,9 +14,6 @@
   --green: #0f6b4f;
   --greenbg: #e3f0ea;
   --crit: #c8371d;
-
-  --font-inter: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-fraunces: var(--font-fraunces), Georgia, serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,12 +32,11 @@
 body {
   background-color: var(--bg);
   color: var(--ink);
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6, .font-heading, .font-serif {
-  font-family: var(--font-fraunces);
-  font-weight: 500;
+  font-family: var(--font-fraunces), Georgia, serif;
 }
-
