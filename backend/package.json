@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
+    "vercel-build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "tsx src/test/runPhase28Tests.ts && tsx src/modules/problems/priority.test.ts && tsx src/modules/admin/admin.test.ts && tsx src/modules/security/security.test.ts",
