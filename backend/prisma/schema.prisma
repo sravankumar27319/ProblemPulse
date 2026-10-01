@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PriorityLevel {
+  CRITICAL
+  MAJOR
+  LOW
+}
+
+enum ProblemStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  COMMUNITY_VERIFIED
+  CLOSED
+  REJECTED
+  DUPLICATE
+  REOPENED
+}
+
+enum ProblemCategory {
+  ROAD
+  WATER
+  GARBAGE
+  ELECTRICITY
+  TRAFFIC
+  OTHER
+}
+
+model User {
+  id              String            @id @default(cuid())
+  name            String
+  email           String            @unique
+  password        String
+  role            Role              @default(USER)
+  avatarUrl       String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  problems        Problem[]         @relation("UserProblems")
+  reports         ProblemReport[]
+  supports        ProblemSupport[]
+  comments        Comment[]
+  notifications   Notification[]
+  timelineActions ProblemTimeline[] @relation("ActorTimeline")
+  communityVotes  CommunityVote[]
+
+  @@map("users")
+}
+
+model Department {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  code        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  problems    Problem[]
+
+  @@map("departments")
+}
+
+model Problem {
+  id             String          @id @default(cuid())
+  title          String
+  description    String
+  category       ProblemCategory
+  severity       Int             @default(5)
+  autoPriority   PriorityLevel   @default(LOW)
+  adminPriority  PriorityLevel?
+  status         ProblemStatus   @default(SUBMITTED)
+  reportCount    Int             @default(1)
+  supportCount   Int             @default(0)
+  peopleAffected Int             @default(1)
+  latitude       Float
+  longitude      Float
+  address        String
+  area           String
+  city           String
+  state          String          @default("Metro State")
+
+  createdById    String
+  createdBy      User            @relation("UserProblems", fields: [createdById], references: [id])
+
+  departmentId   String?
+  department     Department?     @relation(fields: [departmentId], references: [id])
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  media          Media[]
+  reports        ProblemReport[]
+  supports       ProblemSupport[]
+  comments       Comment[]
+  timeline       ProblemTimeline[]
+  resolution     Resolution?
+  communityVotes CommunityVote[]
+
+  @@index([latitude, longitude])
+  @@index([status, autoPriority])
+  @@map("problems")
+}
+
+model Media {
+  id           String      @id @default(cuid())
+  url          String
+  publicId     String?
+  mediaType    String      @default("image") // "image" | "video"
+  
+  problemId    String?
+  problem      Problem?    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  
+  resolutionId String?
+  resolution   Resolution? @relation(fields: [resolutionId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime    @default(now())
+
+  @@map("media")
+}
+
+model ProblemReport {
+  id        String   @id @default(cuid())
+  problemId String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([problemId, userId])
+  @@map("problem_reports")
+}
+
+model ProblemSupport {
+  id        String   @id @default(cuid())
+  problemId String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([problemId, userId])
+  @@map("problem_supports")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  isFlagged Boolean  @default(false)
+  
+  problemId String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model ProblemTimeline {
+  id         String        @id @default(cuid())
+  fromStatus ProblemStatus?
+  toStatus   ProblemStatus
+  note       String?
+  
+  problemId  String
+  problem    Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  
+  actorId    String
+  actor      User          @relation("ActorTimeline", fields: [actorId], references: [id])
+
+  createdAt  DateTime      @default(now())
+
+  @@map("problem_timeline")
+}
+
+model Resolution {
+  id                  String    @id @default(cuid())
+  problemId           String    @unique
+  problem             Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  description         String
+  proofMedia          Media[]
+  resolvedAt          DateTime  @default(now())
+  communityVerifiedAt DateTime?
+  closedAt            DateTime?
+  isReopened          Boolean   @default(false)
+
+  @@map("resolutions")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  problemId String?
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model CommunityVote {
+  id        String   @id @default(cuid())
+  problemId String
+  userId    String
+  isFixed   Boolean
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, userId])
+  @@map("community_votes")
+}
