@@ -641,14 +641,17 @@ export const getAdminProblemDetail = async (
     throw error;
   }
 
-  // Find candidate duplicates within 300 meters
-  const candidateDuplicates = await findDuplicateProblems({
-    category: problem.category,
-    latitude: problem.latitude,
-    longitude: problem.longitude,
-    radiusMeters: 300,
-    excludeProblemId: problem.id,
-  });
+  // Run candidate duplicates search and department query in parallel
+  const [candidateDuplicates, departments] = await Promise.all([
+    findDuplicateProblems({
+      category: problem.category,
+      latitude: problem.latitude,
+      longitude: problem.longitude,
+      radiusMeters: 300,
+      excludeProblemId: problem.id,
+    }),
+    getDepartments(),
+  ]);
 
   // Calculate priority breakdown
   const priorityBreakdown = calculateAutoPriority({
@@ -662,7 +665,7 @@ export const getAdminProblemDetail = async (
     problem,
     candidateDuplicates,
     priorityBreakdown,
-    departments: await getDepartments(),
+    departments,
     allowedTransitions: getAllowedTransitions(problem.status),
   };
 };

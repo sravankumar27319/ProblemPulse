@@ -14,6 +14,9 @@ const isCloudDatabase =
 const pool = new Pool({
   connectionString: config.databaseUrl,
   ssl: isProduction || isCloudDatabase ? { rejectUnauthorized: false } : undefined,
+  max: 10,
+  idleTimeoutMillis: 60000,
+  connectionTimeoutMillis: 10000,
 });
 const adapter = new PrismaPg(pool);
 
