@@ -111,19 +111,29 @@ export const mediaService = {
       }
     }
 
-    // 2. Graceful offline/local fallback
+    // 2. Persistent Base64 Data URL fallback so media is viewable across pages and in Admin
     if (onProgress) {
       onProgress(30);
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 60));
       onProgress(70);
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 60));
       onProgress(100);
     }
 
-    const previewUrl = URL.createObjectURL(file);
+    const fileBase64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string || URL.createObjectURL(file));
+      };
+      reader.onerror = () => {
+        resolve(URL.createObjectURL(file));
+      };
+      reader.readAsDataURL(file);
+    });
+
     return {
       id: `local_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      url: previewUrl,
+      url: fileBase64,
       publicId: `local_preview_${file.name}`,
       mediaType,
       originalName: file.name,
