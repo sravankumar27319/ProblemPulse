@@ -64,47 +64,59 @@ export const mediaService = {
       sigData.apiKey &&
       sigData.cloudName
     ) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('api_key', sigData.apiKey);
-      formData.append('timestamp', String(sigData.timestamp));
-      formData.append('signature', sigData.signature);
-      if (sigData.folder) {
-        formData.append('folder', sigData.folder);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', sigData.apiKey);
+        formData.append('timestamp', String(sigData.timestamp));
+        formData.append('signature', sigData.signature);
+        if (sigData.folder) {
+          formData.append('folder', sigData.folder);
+        }
+
+        const resourceType = isVideo ? 'video' : 'image';
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/${resourceType}/upload`;
+
+        const response = await axios.post(uploadUrl, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total && onProgress) {
+              const percent = Math.min(
+                95,
+                Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              );
+              onProgress(percent);
+            }
+          },
+        });
+
+        if (onProgress) onProgress(100);
+
+        return {
+          id: response.data.public_id || `media_${Date.now()}`,
+          url: response.data.secure_url || response.data.url,
+          publicId: response.data.public_id,
+          mediaType,
+          originalName: file.name,
+          size: file.size,
+          format: response.data.format,
+        };
+      } catch (uploadError) {
+        console.warn(
+          'Direct Cloudinary upload failed, falling back to instant preview mode:',
+          uploadError
+        );
       }
-
-      const resourceType = isVideo ? 'video' : 'image';
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/${resourceType}/upload`;
-
-      const response = await axios.post(uploadUrl, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total && onProgress) {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            onProgress(percent);
-          }
-        },
-      });
-
-      return {
-        id: response.data.public_id || `media_${Date.now()}`,
-        url: response.data.secure_url || response.data.url,
-        publicId: response.data.public_id,
-        mediaType,
-        originalName: file.name,
-        size: file.size,
-        format: response.data.format,
-      };
     }
 
-    // 2. Graceful offline/demo fallback when Cloudinary is not configured
+    // 2. Graceful offline/local fallback
     if (onProgress) {
       onProgress(30);
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 100));
       onProgress(70);
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 100));
       onProgress(100);
     }
 

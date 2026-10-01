@@ -49,6 +49,8 @@ export const StepEvidence: React.FC<StepEvidenceProps> = ({
       return;
     }
 
+    let currentList = [...mediaList];
+
     for (const file of fileArray) {
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
@@ -73,7 +75,7 @@ export const StepEvidence: React.FC<StepEvidenceProps> = ({
       // Track in uploading list
       setUploadingFiles((prev) => [
         ...prev,
-        { id: tempId, name: file.name, size: file.size, progress: 5 },
+        { id: tempId, name: file.name, size: file.size, progress: 10 },
       ]);
 
       try {
@@ -88,17 +90,13 @@ export const StepEvidence: React.FC<StepEvidenceProps> = ({
           }
         );
 
-        // Remove from progress list and add to mediaList
+        // Remove from progress list and append to mediaList
         setUploadingFiles((prev) => prev.filter((item) => item.id !== tempId));
-        onChange([...mediaList, uploadedItem]);
+        currentList = [...currentList, uploadedItem];
+        onChange(currentList);
       } catch (err: any) {
-        setUploadingFiles((prev) =>
-          prev.map((item) =>
-            item.id === tempId
-              ? { ...item, error: err.message || 'Upload failed' }
-              : item
-            )
-        );
+        setUploadingFiles((prev) => prev.filter((item) => item.id !== tempId));
+        setErrorMessage(err.message || 'Upload failed. Please try another file.');
       }
     }
   };
