@@ -13,6 +13,8 @@ import adminRoutes from './modules/admin/admin.routes';
 
 const app: Express = express();
 
+app.set('trust proxy', 1);
+
 // Phase 27 — Helmet Security Headers
 app.use(
   helmet({
@@ -27,6 +29,7 @@ app.use(
           'http://127.0.0.1:3000',
           'https://api.cloudinary.com',
           'https://*.tile.openstreetmap.org',
+          'https://*.vercel.app',
         ],
         imgSrc: [
           "'self'",
