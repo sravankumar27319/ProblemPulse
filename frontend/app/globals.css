@@ -37,6 +37,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global Typography & Weight Normalization */
 h1, h2, h3, h4, h5, h6, .font-heading, .font-serif {
   font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+/* Restrain overly bold font weights globally */
+.font-bold {
+  font-weight: 600 !important;
+}
+
+.font-extrabold, .font-black {
+  font-weight: 600 !important;
+}
+
+h1 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  line-height: 1.25;
 }

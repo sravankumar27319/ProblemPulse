@@ -11,7 +11,7 @@ export const Hero: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         {/* Large heading with sunset metaphor and highlighted span */}
         <h1
-          className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.14]"
+          className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight leading-[1.14]"
           style={{ textShadow: '0 2px 8px rgba(0,0,0,0.65)' }}
         >
           Like the Sunset, Every Problem<br className="hidden sm:inline" />{' '}
